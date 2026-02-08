@@ -14,12 +14,10 @@
     {
       "source": "/api/(.*)",
       "destination": "/api/handler.js"
-    }
-  ],
-  "routes": [
+    },
     {
-      "src": "/",
-      "dest": "/index.html"
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
     }
   ]
 }
