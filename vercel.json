@@ -1,19 +1,7 @@
 {
   "buildCommand": "npm install",
-  "outputDirectory": "public",
-  "framework": null,
+  "outputDirectory": ".",
+  "framework": "vercel",
   "installCommand": "npm install",
-  "regions": ["iad1"],
-  "builds": [
-    {
-      "src": "api/handler.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/handler.js"
-    }
-  ]
+  "regions": ["iad1"]
 }
