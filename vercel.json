@@ -1,7 +1,7 @@
 {
   "buildCommand": "npm install",
   "outputDirectory": ".",
-  "framework": "vercel",
+  "framework": "other",
   "installCommand": "npm install",
   "regions": ["iad1"]
 }
