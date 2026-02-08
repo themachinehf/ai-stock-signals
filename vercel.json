@@ -6,28 +6,21 @@
   "regions": ["iad1"],
   "builds": [
     {
-      "src": "api/**/*.py",
+      "src": "api/handler.py",
       "use": "@vercel/python",
       "config": {
-        "runtime": "python3.8"
-      }
-    },
-    {
-      "src": "main.py",
-      "use": "@vercel/python",
-      "config": {
-        "runtime": "python3.8"
+        "runtime": "python3.12"
       }
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/api/$1"
+      "dest": "/api/handler.py"
     },
     {
       "src": "/(.*)",
-      "dest": "/main.py"
+      "dest": "/api/handler.py"
     }
   ]
 }
