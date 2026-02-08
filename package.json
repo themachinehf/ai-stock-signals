@@ -1,0 +1,11 @@
+{
+  "name": "crypto-ai-signals",
+  "version": "1.0.0",
+  "description": "Crypto AI Signal Agent API",
+  "main": "api/handler.js",
+  "scripts": {
+    "start": "node api/handler.js"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

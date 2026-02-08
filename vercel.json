@@ -1,38 +1,23 @@
 {
-  "buildCommand": "pip install -r requirements.txt",
+  "buildCommand": "npm install",
   "outputDirectory": ".",
   "framework": null,
-  "installCommand": "pip install -r requirements.txt",
+  "installCommand": "npm install",
   "regions": ["iad1"],
   "builds": [
     {
-      "src": "api/handler.py",
-      "use": "@vercel/python",
-      "config": {
-        "runtime": "python3.12",
-        "enableServerlessSourcemaps": false
-      }
+      "src": "api/handler.js",
+      "use": "@vercel/node"
     }
   ],
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/handler.py"
+      "destination": "/api/handler.js"
     },
     {
       "source": "/(.*)",
-      "destination": "/api/handler.py"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        }
-      ]
+      "destination": "/api/handler.js"
     }
   ]
 }
