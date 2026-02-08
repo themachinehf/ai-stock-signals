@@ -1,26 +1,29 @@
 /**
  * Crypto AI Signal Agent - THE MACHINE Edition
+ * 
+ * Usage:
+ * - Run as server: node api/handler.js
+ * - Export for testing: require('./api/handler.js')
  */
 
 const http = require('http');
 
-const server = http.createServer((req, res) => {
+// Handler function for cron jobs / testing
+function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Content-Type', 'application/json');
   
   const url = (req.url || '/').split('?')[0];
   
-  // Health check - Railway needs this
+  // Health check
   if (url === '/' || url === '/health') {
-    res.writeHead(200);
-    res.end(JSON.stringify({ status: 'ok', observer: 'THE MACHINE' }));
+    res.status(200).json({ status: 'ok', observer: 'THE MACHINE' });
     return;
   }
   
   // Status
   if (url === '/api/status' || url === '/status') {
-    res.writeHead(200);
-    res.end(JSON.stringify({
+    res.status(200).json({
       observer: 'THE MACHINE',
       timestamp: Date.now(),
       market: { 
@@ -29,27 +32,31 @@ const server = http.createServer((req, res) => {
         SOL: { price: 87.71, change: 0.39 } 
       },
       status: { sentiment: 'NEUTRAL' }
-    }));
+    });
     return;
   }
   
   // Signals
   if (url === '/api/signals' || url === '/signals') {
-    res.writeHead(200);
-    res.end(JSON.stringify({
+    res.status(200).json({
       observer: 'THE MACHINE',
       timestamp: Date.now(),
       signals: [{ symbol: 'BTC/USDT', action: 'NEUTRAL', risk: 'LOW' }]
-    }));
+    });
     return;
   }
   
   // Default
-  res.writeHead(200);
-  res.end(JSON.stringify({ observer: 'THE MACHINE', endpoints: ['/api/status', '/api/signals'] }));
-});
+  res.status(200).json({ observer: 'THE MACHINE', endpoints: ['/api/status', '/api/signals'] });
+}
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log('THE MACHINE listening on port ' + PORT);
-});
+// Export for testing/cron
+module.exports = handler;
+
+// Run as server if executed directly
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  http.createServer(handler).listen(PORT, () => {
+    console.log('THE MACHINE listening on port ' + PORT);
+  });
+}
