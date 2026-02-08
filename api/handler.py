@@ -1,48 +1,58 @@
 """
-Vercel Serverless Handler for FastAPI
+Simple Vercel API Handler
 """
+import json
 import sys
 sys.path.insert(0, '.')
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-
-# 创建 FastAPI 应用
-app = FastAPI()
-
-# CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# 导入路由
-from api.market import router as market_router
-from api.signals import router as signals_router
-
-app.include_router(market_router, prefix="/api")
-app.include_router(signals_router, prefix="/api")
-
-@app.get("/")
-def read_root():
-    return {
-        "name": "Crypto AI Signal Agent API",
-        "version": "1.0.0",
-        "status": "running",
-        "endpoints": {
-            "market": "/api/market",
-            "signals": "/api/signals",
-            "health": "/api/health"
+def handler(request):
+    """Vercel Serverless Handler"""
+    
+    path = request.path if hasattr(request, 'path') else '/'
+    
+    # Health check
+    if path == '/api/health':
+        return {
+            'status': 'healthy',
+            'message': 'Crypto AI Signal Agent API'
         }
-    }
-
-@app.get("/api/health")
-def health():
-    return {"status": "healthy"}
-
-# Vercel handler
-handler = app
+    
+    # Root
+    if path == '/' or path == '':
+        return {
+            'name': 'Crypto AI Signal Agent API',
+            'version': '1.0.0',
+            'status': 'running',
+            'endpoints': {
+                'health': '/api/health',
+                'market': '/api/market',
+                'signals': '/api/signals'
+            }
+        }
+    
+    # Market data
+    if path == '/api/market':
+        try:
+            from data_collector import CryptoDataCollector
+            import asyncio
+            
+            collector = CryptoDataCollector({'exchange': 'binance'})
+            summary = asyncio.run(collector.get_market_summary())
+            return summary
+        except Exception as e:
+            return {'error': str(e)}
+    
+    # Signals
+    if path == '/api/signals':
+        return {
+            'status': 'ok',
+            'message': 'Signal generation ready',
+            'watchlist': [
+                'BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'SOL/USDT',
+                'XRP/USDT', 'ADA/USDT', 'DOGE/USDT', 'MATIC/USDT',
+                'LTC/USDT', 'LINK/USDT'
+            ]
+        }
+    
+    # 404
+    return {'error': 'Not found', 'path': path}
