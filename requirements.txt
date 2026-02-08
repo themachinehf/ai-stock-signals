@@ -1,0 +1,22 @@
+# Core dependencies
+requests>=2.31.0
+python-telegram-bot>=20.0
+aiohttp>=3.9.0
+
+# Data processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# AI/LLM
+openai>=1.0.0
+
+# Crypto data (Binance, OKX, etc.)
+ccxt>=4.0.0
+
+# Web framework (optional, for local testing)
+fastapi>=0.100.0
+uvicorn>=0.23.0
+
+# Utilities
+python-dotenv>=1.0.0
+tenacity>=8.2.0

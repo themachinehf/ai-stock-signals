@@ -1,0 +1,57 @@
+# 加密货币AI信号系统配置
+# 2026-02-08 创建
+
+# Telegram Bot配置
+telegram:
+  bot_token: "8210912251:AAHTScin3LJy4spje3eOwCQ2N0OzS7Qx7lk"
+  channel_id: "6645368242"
+  admin_user_id: "6645368242"
+
+# LLM配置 - 使用规则分析，无需API key
+llm:
+  provider: "minimax"
+  api_key: ""  # 可选，无API key时使用规则分析
+  model: "MiniMax-M2.1"
+  base_url: "https://api.minimaxi.com/anthropic"
+
+# 加密货币数据配置
+crypto:
+  # 交易所选择: binance, okx, coinbase, kucoin
+  exchange: "binance"
+  
+  # API密钥（可选，用于私有API访问）
+  # api_key: ""
+  # secret: ""
+  
+  # 监控的交易对
+  watchlist:
+    - "BTC/USDT"
+    - "ETH/USDT"
+    - "BNB/USDT"
+    - "SOL/USDT"
+    - "XRP/USDT"
+    - "ADA/USDT"
+    - "DOGE/USDT"
+    - "MATIC/USDT"
+    - "LTC/USDT"
+    - "LINK/USDT"
+  
+  # 异动阈值
+  drop_threshold: -5.0   # 大跌阈值 %
+  rise_threshold: 5.0    # 大涨阈值 %
+  
+  # K线时间周期
+  timeframes:
+    - "1h"
+    - "4h"
+    - "1d"
+
+# CoinGecko基本面数据（可选）
+coingecko:
+  enabled: false  # 是否启用
+
+# 系统配置
+system:
+  log_level: "INFO"
+  check_interval: 300  # 检查间隔(秒)
+  max_retries: 3

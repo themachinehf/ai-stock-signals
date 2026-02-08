@@ -1,0 +1,34 @@
+# A股AI交易信号系统配置
+
+# Telegram Bot配置
+telegram:
+  bot_token: "YOUR_BOT_TOKEN_HERE"
+  channel_id: "YOUR_CHANNEL_ID_HERE"
+  admin_user_id: "YOUR_ADMIN_ID_HERE"
+
+# LLM配置
+llm:
+  provider: "openai"  # 或 "minimax"
+  api_key: "YOUR_API_KEY"
+  model: "gpt-4o-mini"  # 或 "MiniMax-M2.1"
+  base_url: "https://api.openai.com/v1"
+
+# A股数据配置
+stock:
+  # 使用免费数据源
+  data_source: "sina"  # sina/eastmoney/akshare
+  # 大跌/大涨阈值
+  drop_threshold: -5.0  # 大跌阈值 %
+  rise_threshold: 5.0   # 大涨阈值 %
+  # 监控股票列表
+  watchlist:
+    - "sh.000001"  # 上证指数
+    - "sz.399001"  # 深证成指
+    - "sh.600519"  # 贵州茅台
+    - "sz.000651"  # 格力电器
+
+# 系统配置
+system:
+  log_level: "INFO"
+  check_interval: 300  # 检查间隔(秒)
+  max_retries: 3
