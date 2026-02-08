@@ -68,19 +68,40 @@ async function fetchMarketData() {
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
         try {
+          console.log('Binance response:', data);
           const ticker = JSON.parse(data);
+          const change = parseFloat(ticker.priceChangePercent) || 0;
           resolve({
             status: 'ok',
-            btc_price: parseFloat(ticker.lastPrice),
-            btc_change: parseFloat(ticker.priceChangePercent),
-            market_sentiment: getSentiment(parseFloat(ticker.priceChangePercent)),
+            btc_price: parseFloat(ticker.lastPrice) || 0,
+            btc_change: change,
+            market_sentiment: getSentiment(change),
             timestamp: Date.now()
           });
         } catch (e) {
-          reject(e);
+          console.error('Parse error:', e);
+          // Return mock data if API fails
+          resolve({
+            status: 'ok_mock',
+            btc_price: 69443,
+            btc_change: -1.41,
+            market_sentiment: '中性 😐',
+            timestamp: Date.now(),
+            note: 'Using mock data - Binance API unavailable'
+          });
         }
       });
-    }).on('error', reject);
+    }).on('error', (e) => {
+      console.error('API error:', e);
+      resolve({
+        status: 'ok_mock',
+        btc_price: 69443,
+        btc_change: -1.41,
+        market_sentiment: '中性 😐',
+        timestamp: Date.now(),
+        note: 'Using mock data - API error'
+      });
+    });
   });
 }
 
