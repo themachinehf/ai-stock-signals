@@ -1,17 +1,18 @@
 /**
  * Crypto AI Signal Agent - THE MACHINE Edition
+ * Using OKX API
  */
-
-const https = require('https');
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   
   if (req.url === '/api/status' || req.url === '/status') {
     res.setHeader('Content-Type', 'application/json');
-    const btc = await fetchBinance('BTC/USDT');
-    const eth = await fetchBinance('ETH/USDT');
-    const sol = await fetchBinance('SOL/USDT');
+    const [btc, eth, sol] = await Promise.all([
+      fetchOKX('BTC-USDT'),
+      fetchOKX('ETH-USDT'),
+      fetchOKX('SOL-USDT')
+    ]);
     return res.status(200).json({
       observer: 'THE MACHINE',
       timestamp: Date.now(),
@@ -36,18 +37,28 @@ module.exports = async (req, res) => {
   });
 };
 
-function fetchBinance(symbol) {
+async function fetchOKX(symbol) {
+  const https = require('https');
   return new Promise((resolve) => {
-    https.get('https://api.binance.com/api/v3/ticker/24hr?symbol=' + symbol.replace('/',''), (resp) => {
+    const url = `https://www.okx.com/api/v5/market/ticker?instId=${symbol}`;
+    https.get(url, (resp) => {
       let data = '';
       resp.on('data', (chunk) => data += chunk);
-      resp.on('end', () => {
+      resp.on('end', async () => {
         try {
-          const t = JSON.parse(data);
-          resolve({ symbol, price: parseFloat(t.lastPrice) || 0, change: parseFloat(t.priceChangePercent) || 0 });
-        } catch { resolve({ symbol, price: 0, change: 0 }); }
+          const json = JSON.parse(data);
+          if (json.data && json.data[0]) {
+            const t = json.data[0];
+            const change = parseFloat(t.sodUtc8) ? ((parseFloat(t.last) - parseFloat(t.sodUtc8)) / parseFloat(t.sodUtc8)) * 100 : 0;
+            resolve({ symbol: symbol.replace('-', '/'), price: parseFloat(t.last) || 0, change: change });
+          } else {
+            resolve({ symbol: symbol.replace('-', '/'), price: 0, change: 0 });
+          }
+        } catch (e) {
+          resolve({ symbol: symbol.replace('-', '/'), price: 0, change: 0 });
+        }
       });
-    }).on('error', () => resolve({ symbol, price: 0, change: 0 }));
+    }).on('error', () => resolve({ symbol: symbol.replace('-', '/'), price: 0, change: 0 }));
   });
 }
 
