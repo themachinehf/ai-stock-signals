@@ -4,9 +4,11 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "node api/handler.js",
+    "startCommand": "npm start",
     "healthcheckPath": "/health",
-    "healthcheckTimeout": 10,
     "restartPolicy": "ON_FAILURE"
+  },
+  "env": {
+    "required": ["TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"]
   }
 }
