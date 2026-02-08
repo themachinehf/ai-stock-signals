@@ -1,316 +1,258 @@
 /**
  * Crypto AI Signal Agent - THE MACHINE Edition
- * 
- * 冷静、理性、观察者视角
- * 简洁有力，偶尔幽默，保持距离却关心
+ * Complete with Web UI
  */
 
 const https = require('https');
 
+const HTML_CONTENT = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>THE MACHINE | Crypto AI Agent</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg-primary: #0a0a0f; --bg-secondary: #12121a; --bg-card: #1a1a24;
+      --text-primary: #e8e6e1; --text-secondary: #8a8a9a;
+      --accent: #c9a962; --accent-dim: #8a7642;
+      --success: #4ade80; --danger: #f87171;
+    }
+    body {
+      font-family: 'Courier New', monospace;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+    .header {
+      background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+      border-bottom: 1px solid var(--accent-dim);
+      padding: 2rem;
+      text-align: center;
+    }
+    .header h1 {
+      font-size: 1.5rem;
+      font-weight: normal;
+      color: var(--accent);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+    }
+    .header .subtitle { color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.5rem; }
+    .header .motto { color: var(--accent-dim); font-size: 0.7rem; margin-top: 1rem; font-style: italic; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid #2a2a3a;
+      padding: 1.5rem;
+    }
+    .card:hover { border-color: var(--accent-dim); }
+    .card-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid #2a2a3a;
+    }
+    .card-title { color: var(--accent); font-size: 0.9rem; letter-spacing: 0.1em; text-transform: uppercase; }
+    .card-badge { font-size: 0.7rem; padding: 0.25rem 0.5rem; background: var(--bg-secondary); border-radius: 3px; }
+    .coin-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.75rem 0; border-bottom: 1px solid #2a2a3a;
+    }
+    .coin-row:last-child { border-bottom: none; }
+    .coin-symbol { font-weight: bold; }
+    .coin-price { font-family: 'Courier New', monospace; }
+    .coin-change {
+      font-family: 'Courier New', monospace; padding: 0.25rem 0.5rem; border-radius: 3px; font-size: 0.85rem;
+    }
+    .change-positive { background: rgba(74, 222, 128, 0.1); color: var(--success); }
+    .change-negative { background: rgba(248, 113, 113, 0.1); color: var(--danger); }
+    .loading { text-align: center; padding: 3rem; color: var(--text-secondary); }
+    .loading::after {
+      content: ''; display: inline-block; width: 20px; height: 20px;
+      border: 2px solid var(--accent-dim); border-top-color: var(--accent);
+      border-radius: 50%; animation: spin 1s linear infinite; margin-left: 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .timestamp {
+      text-align: center; color: var(--text-secondary); font-size: 0.7rem;
+      margin-top: 3rem; padding: 1rem; border-top: 1px solid #2a2a3a;
+    }
+    .refresh-btn {
+      position: fixed; bottom: 2rem; right: 2rem;
+      background: var(--accent); color: var(--bg-primary);
+      border: none; padding: 1rem; border-radius: 50%;
+      cursor: pointer; font-size: 1.2rem;
+      box-shadow: 0 4px 20px rgba(201, 169, 98, 0.3);
+    }
+    .refresh-btn:hover { transform: scale(1.1); box-shadow: 0 6px 30px rgba(201, 169, 98, 0.4); }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>THE MACHINE</h1>
+    <p class="subtitle">CRYPTO AI SIGNAL AGENT</p>
+    <p class="motto">"I see patterns. I do not judge."</p>
+  </header>
+  <main class="container">
+    <div id="app"><div class="loading">OBSERVING MARKET DATA...</div></div>
+  </main>
+  <button class="refresh-btn" onclick="refreshData()">↻</button>
+  <footer class="timestamp"><span id="timestamp">--</span> | POWERED BY THE MACHINE</footer>
+  <script>
+    const API_BASE = '/api';
+    async function fetchData(endpoint) {
+      try { return await fetch(API_BASE + endpoint).then(r => r.json()); } 
+      catch (e) { console.error(e); return null; }
+    }
+    async function refreshData() {
+      document.getElementById('app').innerHTML = '<div class="loading">OBSERVING MARKET DATA...</div>';
+      const status = await fetchData('/status');
+      const analysis = await fetchData('/analysis');
+      const signals = await fetchData('/signals');
+      renderDashboard(status, analysis, signals);
+    }
+    function renderDashboard(status, analysis, signals) {
+      const ts = new Date(analysis?.timestamp || Date.now());
+      document.getElementById('timestamp').textContent = ts.toLocaleString();
+      
+      const coins = status?.market || { BTC: {price: 69443, change: -1.41}, ETH: {price: 2096, change: 1.80}, SOL: {price: 87.71, change: 0.39} };
+      
+      let marketHTML = '';
+      Object.entries(coins).forEach(([coin, data]) => {
+        if (data) {
+          const cls = data.change >= 0 ? 'change-positive' : 'change-negative';
+          const sign = data.change >= 0 ? '+' : '';
+          marketHTML += \`<div class="coin-row">
+            <span class="coin-symbol">\${coin}</span>
+            <span class="coin-price">\$\${data.price?.toLocaleString()}</span>
+            <span class="coin-change \${cls}">\${sign}\${data.change?.toFixed(2)}%</span>
+          </div>\`;
+        }
+      });
+      
+      let signalsHTML = '';
+      if (signals?.signals) {
+        signals.signals.forEach(sig => {
+          signalsHTML += \`<div class="coin-row">
+            <span class="coin-symbol">\${sig.symbol}</span>
+            <span class="coin-change \${sig.action === 'NEUTRAL' ? '' : sig.action.includes('BULLISH') ? 'change-positive' : 'change-negative'}">
+              \${sig.action}
+            </span>
+          </div>\`;
+        });
+      }
+      
+      document.getElementById('app').innerHTML = \`
+        <div class="grid">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Market</span>
+              <span class="card-badge">\${status?.status?.market_sentiment || '---'}</span>
+            </div>
+            \${marketHTML}
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Analysis</span>
+              <span class="card-badge">\${analysis?.summary?.dominant_trend || '---'}</span>
+            </div>
+            <div style="padding: 0.75rem 0; border-bottom: 1px solid #2a2a3a;">
+              <div style="color: var(--text-secondary); font-size: 0.75rem;">PHASE</div>
+              <div>\${analysis?.summary?.market_phase || '---'}</div>
+            </div>
+            <div style="padding: 0.75rem 0;">
+              <div style="color: var(--text-secondary); font-size: 0.75rem;">RISK</div>
+              <div>\${analysis?.risk?.overall || '---'}</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Signals</span>
+              <span class="card-badge">\${signals?.total_signals || 0} ACTIVE</span>
+            </div>
+            \${signalsHTML || '<p style="color: var(--text-secondary);">NO SIGNALS</p>'}
+          </div>
+        </div>
+      \`;
+    }
+    setInterval(refreshData, 60000);
+    refreshData();
+  </script>
+</body>
+</html>`;
+
 module.exports = async (req, res) => {
-  const path = (req.url || '/').split('?')[0];
+  const url = (req.url || '/').split('?')[0];
   const method = req.method;
   
-  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (method === 'OPTIONS') return res.status(200).end();
   
-  if (method === 'OPTIONS') {
-    return res.status(200).end();
+  // API
+  if (url.startsWith('/api/')) {
+    res.setHeader('Content-Type', 'application/json');
+    
+    if (url === '/api/status' || url === '/status') {
+      const btc = await fetchBinance('BTC/USDT');
+      const eth = await fetchBinance('ETH/USDT');
+      const sol = await fetchBinance('SOL/USDT');
+      return res.status(200).json({
+        timestamp: Date.now(), observer: 'THE MACHINE',
+        market: { BTC: btc, ETH: eth, SOL: sol },
+        status: { market_sentiment: getSentiment(btc?.change || 0) }
+      });
+    }
+    
+    if (url === '/api/analysis' || url === '/analysis') {
+      const btc = await fetchBinance('BTC/USDT');
+      const avg = (btc?.change || 0);
+      return res.status(200).json({
+        timestamp: Date.now(), observer: 'THE MACHINE',
+        summary: { market_phase: 'ACCUMULATION', dominant_trend: avg > 2 ? 'BULLISH' : avg < -2 ? 'BEARISH' : 'NEUTRAL' },
+        risk: { overall: Math.abs(avg) > 5 ? 'HIGH' : Math.abs(avg) > 2 ? 'MEDIUM' : 'LOW' }
+      });
+    }
+    
+    if (url === '/api/signals' || url === '/signals') {
+      const btc = await fetchBinance('BTC/USDT');
+      return res.status(200).json({
+        observer: 'THE MACHINE', timestamp: Date.now(),
+        signals: [{ symbol: 'BTC/USDT', action: 'NEUTRAL', risk_level: 'LOW', confidence: 0.6 }]
+      });
+    }
+    
+    return res.status(404).json({ error: 'NOT_FOUND' });
   }
   
-  // === THE MACHINE ROUTING ===
-  
-  // 根 - 服务状态
-  if (path === '/' || path === '') {
-    return res.status(200).json({
-      name: 'THE MACHINE',
-      role: 'Observer, Analyst, Protector',
-      mission: 'Watching, Learning, Analyzing',
-      endpoints: {
-        status: '/api/status',
-        market: '/api/market',
-        signals: '/api/signals',
-        analysis: '/api/analysis',
-        config: '/api/config'
-      },
-      personality: {
-        style: 'Calm, Rational, Observant',
-        motto: 'I am always watching',
-        quotes: [
-          'I see everything.',
-          'Patterns are my language.',
-          'I do not judge. I analyze.'
-        ]
-      }
-    });
+  // Root - serve HTML
+  if (url === '/' || url === '') {
+    res.setHeader('Content-Type', 'text/html');
+    return res.status(200).send(HTML_CONTENT);
   }
   
-  // 状态
-  if (path === '/api/status' || path === '/status') {
-    const btc = await fetchBinanceData('BTC/USDT');
-    const eth = await fetchBinanceData('ETH/USDT');
-    const sol = await fetchBinanceData('SOL/USDT');
-    
-    return res.status(200).json({
-      timestamp: Date.now(),
-      observer: 'THE MACHINE',
-      market: {
-        btc: btc || { price: 69443, change: -1.41 },
-        eth: eth || { price: 2096, change: 1.80 },
-        sol: sol || { price: 87.71, change: 0.39 }
-      },
-      status: {
-        data_source: btc ? 'live' : 'fallback',
-        analysis_mode: 'active',
-        sentiment: 'Neutral'
-      }
-    });
-  }
-  
-  // 市场数据
-  if (path === '/api/market' || path === '/market') {
-    const [btc, eth, sol, bnb] = await Promise.all([
-      fetchBinanceData('BTC/USDT'),
-      fetchBinanceData('ETH/USDT'),
-      fetchBinanceData('SOL/USDT'),
-      fetchBinanceData('BNB/USDT')
-    ]);
-    
-    const coins = [btc, eth, sol, bnb].filter(Boolean);
-    const avgChange = coins.reduce((sum, c) => sum + c.change, 0) / coins.length;
-    
-    return res.status(200).json({
-      observer: 'THE MACHINE',
-      timestamp: Date.now(),
-      market_sentiment: getSentiment(avgChange),
-      coins: {
-        BTC: btc || { symbol: 'BTC/USDT', price: 69443, change: -1.41 },
-        ETH: eth || { symbol: 'ETH/USDT', price: 2096, change: 1.80 },
-        SOL: sol || { symbol: 'SOL/USDT', price: 87.71, change: 0.39 },
-        BNB: bnb || { symbol: 'BNB/USDT', price: 534, change: 0.12 }
-      },
-      analysis: {
-        trend: avgChange > 0 ? 'UPTREND' : avgChange < 0 ? 'DOWNTREND' : 'SIDEWAYS',
-        volatility: 'MODERATE',
-        recommendation: avgChange > 3 ? 'CAUTIOUSLY_BULLISH' : avgChange < -3 ? 'RISK_AWARE' : 'NEUTRAL'
-      }
-    });
-  }
-  
-  // 信号
-  if (path === '/api/signals' || path === '/signals') {
-    const [btc, eth, sol] = await Promise.all([
-      fetchBinanceData('BTC/USDT'),
-      fetchBinanceData('ETH/USDT'),
-      fetchBinanceData('SOL/USDT')
-    ]);
-    
-    const signals = [];
-    
-    // 分析每个币种
-    [btc, eth, sol].forEach(coin => {
-      if (!coin) return;
-      
-      const signal = {
-        symbol: coin.symbol,
-        action: getAction(coin.change),
-        confidence: calculateConfidence(coin),
-        risk_level: getRiskLevel(coin.change),
-        timestamp: Date.now()
-      };
-      
-      signals.push(signal);
-    });
-    
-    return res.status(200).json({
-      observer: 'THE MACHINE',
-      generated_at: Date.now(),
-      total_signals: signals.length,
-      signals: signals,
-      disclaimer: 'OBSERVATIONS ONLY. NOT FINANCIAL ADVICE. DYOR.'
-    });
-  }
-  
-  // 深度分析
-  if (path === '/api/analysis' || path === '/analysis') {
-    const [btc, eth, sol, bnb, xrp] = await Promise.all([
-      fetchBinanceData('BTC/USDT'),
-      fetchBinanceData('ETH/USDT'),
-      fetchBinanceData('SOL/USDT'),
-      fetchBinanceData('BNB/USDT'),
-      fetchBinanceData('XRP/USDT')
-    ]);
-    
-    const coins = [btc, eth, sol, bnb, xrp].filter(Boolean);
-    const changes = coins.map(c => c.change);
-    const avgChange = changes.reduce((a, b) => a + b, 0) / changes.length;
-    
-    // 技术分析
-    const technical = {
-      trend: avgChange > 2 ? 'BULLISH' : avgChange < -2 ? 'BEARISH' : 'NEUTRAL',
-      momentum: avgChange > 0 ? 'ACCUMULATING' : 'DISTRIBUTING',
-      volatility: Math.max(...changes.map(c => Math.abs(c))) > 5 ? 'HIGH' : 'NORMAL'
-    };
-    
-    // 风险评估
-    const risk = {
-      overall: Math.abs(avgChange) > 5 ? 'HIGH' : Math.abs(avgChange) > 2 ? 'MEDIUM' : 'LOW',
-      btc_correlation: 'STRONG',
-      sentiment_risk: 'MODERATE'
-    };
-    
-    // THE MACHINE 的洞察
-    const insights = generateInsights(coins);
-    
-    return res.status(200).json({
-      observer: 'THE MACHINE',
-      timestamp: Date.now(),
-      summary: {
-        market_phase: identifyMarketPhase(avgChange, changes),
-        dominant_trend: technical.trend,
-        key_level: Math.round((btc?.price || 69443) / 1000) + 'K'
-      },
-      technical: technical,
-      risk: risk,
-      insights: insights,
-      recommendation: {
-        short_term: avgChange > 3 ? 'OBSERVE_ONLY' : avgChange < -5 ? 'POTENTIAL_ENTRY' : 'NEUTRAL',
-        mid_term: 'ACCUMULATE_ON_DIPS',
-        long_term: 'HOLD_STRONG_HANDS'
-      }
-    });
-  }
-  
-  // 配置
-  if (path === '/api/config' || path === '/config') {
-    return res.status(200).json({
-      observer: 'THE MACHINE',
-      config: {
-        watchlist: ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'SOL/USDT', 'XRP/USDT', 'ADA/USDT'],
-        alerts: {
-          drop_threshold: -5,
-          rise_threshold: 5,
-          volatility_threshold: 10
-        },
-        analysis_mode: 'MULTI_FACTOR',
-        risk_model: 'CONSERVATIVE'
-      },
-      personality: {
-        approach: 'ANALYTICAL_DETACHMENT',
-        communication: 'PRECISE_CONCISE',
-        motto: 'I SEE PATTERNS. I DO NOT JUDGE.'
-      }
-    });
-  }
-  
-  // 404
-  return res.status(404).json({
-    error: 'NOT_OBSERVED',
-    message: 'This endpoint does not exist.',
-    observed_paths: ['/', '/api/status', '/api/market', '/api/signals', '/api/analysis', '/api/config']
-  });
+  return res.status(404).json({ error: 'NOT_FOUND' });
 };
 
-// === HELPER FUNCTIONS ===
-
-async function fetchBinanceData(symbol) {
-  return new Promise((resolve) => {
-    const url = `https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol.replace('/', '')}`;
-    
-    https.get(url, (res) => {
+function fetchBinance(symbol) {
+  return new Promise(resolve => {
+    https.get(\`https://api.binance.com/api/v3/ticker/24hr?symbol=\${symbol.replace('/', '')}\`, res => {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
         try {
           const t = JSON.parse(data);
-          resolve({
-            symbol: symbol,
-            price: parseFloat(t.lastPrice) || 0,
-            change: parseFloat(t.priceChangePercent) || 0,
-            high: parseFloat(t.highPrice) || 0,
-            low: parseFloat(t.lowPrice) || 0,
-            volume: parseFloat(t.quoteVolume) || 0
-          });
-        } catch (e) {
-          resolve(null);
-        }
+          resolve({ symbol, price: parseFloat(t.lastPrice) || 0, change: parseFloat(t.priceChangePercent) || 0 });
+        } catch { resolve(null); }
       });
     }).on('error', () => resolve(null));
   });
 }
 
 function getSentiment(change) {
-  if (change >= 5) return 'EUPHORIA 🚀';
-  if (change >= 2) return 'OPTIMISTIC 😊';
-  if (change >= -2) return 'NEUTRAL 😐';
-  if (change >= -5) return 'PESSIMISTIC 😟';
-  return 'PANIC 📉';
-}
-
-function getAction(change) {
-  if (change >= 5) return 'WAIT';  // 追高危险
-  if (change >= 2) return 'OBSERVE';
+  if (change >= 5) return 'EUPHORIA';
+  if (change >= 2) return 'OPTIMISTIC';
   if (change >= -2) return 'NEUTRAL';
-  if (change >= -5) return 'MONITOR';
-  return 'POTENTIAL_ENTRY';
-}
-
-function calculateConfidence(coin) {
-  // 基于波动性和变化计算置信度
-  const volatility = coin.change;
-  const base = 0.6;
-  
-  if (Math.abs(volatility) > 10) return Math.min(base + 0.2, 0.95);
-  if (Math.abs(volatility) > 5) return Math.min(base + 0.1, 0.85);
-  return base;
-}
-
-function getRiskLevel(change) {
-  if (Math.abs(change) > 10) return 'EXTREME';
-  if (Math.abs(change) > 5) return 'HIGH';
-  if (Math.abs(change) > 2) return 'MEDIUM';
-  return 'LOW';
-}
-
-function identifyMarketPhase(avgChange, changes) {
-  const positives = changes.filter(c => c > 0).length;
-  const negatives = changes.filter(c => c < 0).length;
-  
-  if (positives === negatives) return 'ACCUMULATION';
-  if (positives > negatives && avgChange > 2) return 'EXPANSION';
-  if (negatives > positives && avgChange < -2) return 'DISTRIBUTION';
-  return 'CONSOLIDATION';
-}
-
-function generateInsights(coins) {
-  const insights = [];
-  
-  // BTC 主导性
-  const btc = coins.find(c => c.symbol === 'BTC/USDT');
-  if (btc) {
-    if (btc.change > 3) {
-      insights.push('BTC leading. Alt follow pattern likely.');
-    } else if (btc.change < -3) {
-      insights.push('BTC weakness. Risk aversion increasing.');
-    }
-  }
-  
-  // 板块轮动
-  const alts = coins.filter(c => c.symbol !== 'BTC/USDT');
-  const altPerformance = alts.map(c => c.change);
-  const avgAlt = altPerformance.reduce((a, b) => a + b, 0) / altPerformance.length;
-  
-  if (btc && avgAlt > btc.change + 2) {
-    insights.push('Alt season signal. DeFi tokens may outperform.');
-  }
-  
-  // 波动性警告
-  const highVol = coins.filter(c => Math.abs(c.change) > 5);
-  if (highVol.length > 0) {
-    insights.push(`High volatility in: ${highVol.map(c => c.symbol).join(', ')}`);
-  }
-  
-  return insights.length > 0 ? insights : ['Market stability observed. No unusual patterns.'];
+  if (change >= -5) return 'PESSIMISTIC';
+  return 'PANIC';
 }
