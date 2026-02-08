@@ -5,7 +5,8 @@
   },
   "deploy": {
     "startCommand": "node api/handler.js",
-    "healthcheckPath": "/",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 10,
     "restartPolicy": "ON_FAILURE"
   }
 }
