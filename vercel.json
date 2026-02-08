@@ -9,18 +9,30 @@
       "src": "api/handler.py",
       "use": "@vercel/python",
       "config": {
-        "runtime": "python3.12"
+        "runtime": "python3.12",
+        "enableServerlessSourcemaps": false
       }
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "/api/handler.py"
+      "source": "/api/(.*)",
+      "destination": "/api/handler.py"
     },
     {
-      "src": "/(.*)",
-      "dest": "/api/handler.py"
+      "source": "/(.*)",
+      "destination": "/api/handler.py"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
     }
   ]
 }
