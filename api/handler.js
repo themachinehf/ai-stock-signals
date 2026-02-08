@@ -6,16 +6,27 @@ module.exports = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Content-Type', 'application/json');
   
-  if (req.url === '/api/status' || req.url === '/status') {
+  const url = (req.url || '/').split('?')[0];
+  
+  // Health check - Railway needs this
+  if (url === '/' || url === '/health') {
+    return res.status(200).json({ status: 'ok', observer: 'THE MACHINE' });
+  }
+  
+  if (url === '/api/status' || url === '/status') {
     return res.status(200).json({
       observer: 'THE MACHINE',
       timestamp: Date.now(),
-      market: { BTC: { price: 69443, change: -1.41 }, ETH: { price: 2096, change: 1.80 }, SOL: { price: 87.71, change: 0.39 } },
+      market: { 
+        BTC: { price: 69443, change: -1.41 }, 
+        ETH: { price: 2096, change: 1.80 }, 
+        SOL: { price: 87.71, change: 0.39 } 
+      },
       status: { sentiment: 'NEUTRAL' }
     });
   }
   
-  if (req.url === '/api/signals' || req.url === '/signals') {
+  if (url === '/api/signals' || url === '/signals') {
     return res.status(200).json({
       observer: 'THE MACHINE',
       timestamp: Date.now(),
