@@ -1,0 +1,18 @@
+{
+  "buildCommand": "pip install -r requirements.txt",
+  "outputDirectory": ".",
+  "framework": null,
+  "installCommand": "pip install -r requirements.txt",
+  "regions": ["iad1"],
+  "functions": {
+    "api/**/*.py": {
+      "runtime": "python3.8"
+    }
+  },
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1.py"
+    }
+  ]
+}
