@@ -1,7 +1,6 @@
 {
   "buildCommand": "npm install",
   "outputDirectory": ".",
-  "framework": "other",
   "installCommand": "npm install",
   "regions": ["iad1"]
 }
